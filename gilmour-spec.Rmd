@@ -1,0 +1,209 @@
+---
+title: "gilmour-specs"
+author: "Josef Dolejs"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{gilmour-specs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Several methods may be found for selecting a subset of regressors from a set of k candidate variables in multiple linear regression. One possibility is to evaluate all possible regression models and comparing them using Mallows's Cp statistic (Cp).<br>
+    1. Gilmour, S.G. The interpretation of Mallows's Cp-statistic. The Statistician. 1996. 45(1) 49-56. doi--10.2307/2348411. https--//rss.onlinelibrary.wiley.com/doi/10.2307/2348411<br>
+    2. Boisbunon, Aurélie; Canu, Stephane; Fourdrinier, Dominique; Strawderman, William; Wells, Martin T. (2013). "AIC, Cp and estimators of loss for elliptically symmetric distributions". arXiv--1308.2766 <br>
+Generally, the presented package is suitable when the number of observations (n) is small and the number of regressors (k) is relatively low. However, the condition n > k + 3 should be satisfied.
+<br>
+<b>Short theoretical bacground.</b><br>
+For a particular submodel with p parameters, the Cp statistic is defined as:
+
+$Cp = \frac{SSEp}{\sigma^2}-n+2p$
+
+where SSEₚ is the sum of squared errors for the submodel, and MSE is the mean square error from the full model with all possible regressors, used as an estimate of the error variance σ².
+Gilmour proposed an adjusted version of the Cp statistic to improve model comparison, given by:
+
+$\bar{C}_p = C_p - \frac{2(k - p + 1)}{(n - k – 3)}$
+
+where k is the number of regressors in the full model, and p - 1 is the number of regressors in the submodel (thus, p includes the intercept term).
+Further details and theoretical background can be found in Gilmour's original paper. For example, in the case of the trivial model (i.e., a model with only an intercept), the adjusted statistic is:
+
+$\bar{C}_1 = C_1 - \frac{2(k - p + 1)}{(n - k – 3)}= \frac{var(y)(n-1)}{MSE}-n+2-\frac{2(k - p + 1)}{(n - k – 3)}$
+
+
+where the function var() of sample variation is used for calculation of sum of squares in the trivial model and MSE is estimation of $\sigma^2$.
+
+The package contains three primary functions: <b>submodels(d), final_model(d)</b>, and <b>examples()</b>.
+<br>The first two functions, submodels(d) and final_model(d), share the same input argument d, which must be a table in the data.frame format. The first column of this data frame should contain the response (dependent) numerical variable (y), while the remaining columns should contain the explanatory (independent) numerical variables (regressors). By default, each row represents a single observation.
+<br><b><span style="color:red">
+The number of observations (n) should be higher than the number of regressors (k) plus three (n>k+3).
+</span></b><br>
+The functions ignore column names (colnames) and row names (rownames); however, <b>
+<span style="color:red">the position of the first column is critical and must always contain the response variable.</b></span>
+The package includes nine illustrative datasets, which can be accessed using the function <b>examples()</b>, which takes no arguments.<br>The statement shows all nine tables:<br>
+<b><span style="color:red"> examples()</span></b><br>
+Additionally, the standard R dataset <b>"mtcars"</b> is used as a tenth example in the help documentation. In this dataset, the first column (mpg, representing car fuel consumption) is used as the response variable.<br>
+Some example datasets have no substantive meaning and are included purely to demonstrate technical capabilities of the functions. However, three of the datasets were used in previously published studies and carry practical relevance. 
+<br>Here is citation of the original article:
+<br><b>Gilmour, S.G. The interpretation of Mallows's Cp-statistic. The Statistician. 1996. 45(1):49-56. doi:10.2307/2348411.
+<br>https://rss.onlinelibrary.wiley.com/doi/10.2307/2348411</b><br>
+
+<b>The procedure consists of two main steps:</b>
+<br>
+<b>Initial Selection:</b> <br>
+Adjusted $\bar{C}_p$ values are calculated for all possible combinations of regressors. For example, 1023 submodels are for "mtcars" data, see the two following statements:
+<br><b><span style="color:red">
+submodels(mtcars)&#36;submodels_number<br>
+final_model(mtcars)&#36;submodels_number
+</span></b><br>
+Subsequently, the submodel with the minimum $\bar{C}_p$ value is selected and labeled as ModelMin.
+<br>See the two following statements:
+<br><b><span style="color:red">
+submodels(mtcars)&#36;model_min<br>
+final_model(mtcars)&#36;model_min
+</span></b><br>
+<b>Reduction and Testing in the function "final_model(d)":</b> <br>
+All submodels nested within ModelMin are considered. Among them, the submodel with the lowest $\bar{C}_p$ is selected as a new candidate. A hypothesis test is then performed where the null hypothesis states that ModelMin provides a better fit than the candidate submodel. If the null hypothesis is not rejected, ModelMin is accepted as the final model. If the null hypothesis is rejected, the candidate submodel becomes the new ModelMin, and the process is repeated with submodels nested within this new model. The procedure continues iteratively until a null hypothesis is not rejected or until the so-called trivial model (i.e., a model using only the arithmetic mean) is reached. See the two diagrams below.
+<br>
+The function <b>"final_model(d)" </b> returns full regression results for: <b><br>
+    the Full Model,
+    the selected ModelMin, and
+    the resulting Final Model.</b>
+<br>Additionally, it outputs $\bar{C}_p$ values for all submodels, enabling users to easily generate a adjusted <b>$\bar{C}_p$ ~ p </b> plot (where p is the number of regressors+1), as recommended by Gilmour.
+<br> The statements which draw the plots are below and in the help of the package.<br>
+
+<span><b>"Initial Selection" is in the two functions: submodels() and final_model()</b></span>
+<br>
+<img src="figures/diag1.png" alt="Trulli" style="width:50%" >
+<br><br><br>
+<span><b>"Reduction and Testing" is in the function final_model()</b></span>
+<br>
+<img src="figures/diag2.png" alt="Trulli" style="width:50%" >
+<br><br>
+
+
+<b>Examples:</b><br>
+
+The package includes nine illustrative datasets, which can be accessed using the function examples(), which takes no arguments. Additionally, the standard R dataset "mtcars" is used as a tenth example in the help documentation (see: mtcars dataset). In this dataset, the first column (mpg, representing car fuel consumption) is used as the response variable.
+Some example datasets have no substantive meaning and are included purely to demonstrate technical capabilities of the functions. However, three of the datasets were used in previously published studies and carry practical relevance.
+<br><b>References of three data files with practical meaning:</b>
+<br><b>
+Gilmour9p:</b><br> Gilmour, S.G. The interpretation of Mallows's Cp-statistic. The Statistician. 1996. 45(1):49-56. doi:10.2307/2348411
+<br><b>
+Parks5p:</b><br> Stemberk Josef, Josef Dolejs, Petra Maresova, Kamil Kuca. Factors affecting the number of Visitors in National Parks in the Czech Republic, Germany and Austria. International Journal of Geo-Information. http://www.mdpi.com/2220-9964/7/3/124. ISPRS Int. J. Geo-Inf. 2018, 7(3), 124; doi:10.3390/ijgi7030124
+<br><b>
+Patents5p:</b><br> Perspective and Suitable Research Area in Public Research—Patent Analysis of the Czech Public Universities. Education and Urban Society, 54(7), https://doi.org/10.1177/00131245211027362
+<br>
+<b>The First Example: mtcars</b>
+
+
+```{r, echo=FALSE, results='asis'}
+knitr::kable(head(mtcars, 10))
+```
+
+<br>
+<p><b><span style="color:red"> d=mtcars ; MyResults=final_model(d) </span></b></p>
+<i> This is what the output looks like when applying the final_model(d) function: </i>
+<p><span style="color:blue"><br>
+[1] "Number of regressors in model_min  3"<br>
+[1] "model_min:  y~x5+x6+x8" <br>
+[1] "Cq+1: -0.634206365802602"<br>
+[1] "The starting value of q for the test of submodel is:   3"<br>
+[1] "For q = 3: Ho is rejected, new submodel goes to the next test."<br>
+[1] "For q = 2: the End, Ho is not rejected, the resulting model is: y~x5+x6+const.  F= 11.79722 Cq+1 = 0.98767"<br>
+[1] "Final value of q is :  2" <br>
+<p><span style="color:blue">  </span></p><br>
+
+<i> This is how you can display the basic graph of the Gilmour method, where in the first step the model with the minimum value of the adjusted statistic $\bar{C}_p$ is searched.</i><br>.
+
+<p><b><span style="color:red"> 
+yCp= as.numeric(MyResults&#36;submodels[,3]) ; xp= as.numeric(MyResults&#36;submodels[,2])  <br>
+ymin= ifelse(min(yCp)<0, 1.1* min(yCp), 0.9* min(yCp))  <br>
+YRange=c( ymin ,1.5*max(xp)) <br>
+plot(yCp ~ xp, xlab="Number of Parameters in Submodel",ylab="", ylim=YRange , col=ifelse( ( round(yCp,4)== <br>round(min(yCp),4)| round(yCp,4)== round(FinalCp,4) ), "red", "darkblue")  )
+lines(xp, xp, col="red")<br>
+mtext(bquote(paste( bar(C) , "p")), side=2, line=3, padj=1, cex=1.2)<br>
+mtext(bquote(paste("All Submodels: ",bar(C),"p ~ p")), side=3, line=3, padj=1, cex=1.2)<br>
+</span></b></p>
+
+
+<br>
+<img src="figures/Cp_mtcars.png" alt="Trulli" style="width:80%" >
+<br><br>
+
+<i> The following commands show additional outputs for the full model and for the final model.</i> 
+<p><b><span style="color:red"> <br>
+MyResults&#36;full_model<br>
+summary(MyResults&#36;full_model_results)<br>
+MyResults&#36;final_model <br>
+summary(MyResults&#36;final_model_results) <br>
+</span></b></p>
+<i> For example, the last statement shows the outputs for the final model.</i>
+
+<p><span style="color:blue">
+Call:<br>
+lm(formula = as.formula(model_min))<br>
+Residuals:<br>
+    Min &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1Q&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Median &nbsp;&nbsp;&nbsp;3Q &nbsp;&nbsp;&nbsp;&nbsp; Max <br>
+-4.3962 -2.1431 -0.2129  1.4915  5.7486 <br>
+Coefficients:<br>
+&emsp;&emsp;&emsp;&emsp;Estimate &nbsp;&nbsp;Std. Error &nbsp;&nbsp;t value&nbsp;&nbsp; Pr(>|t|)  <br>  
+(Intercept)  &nbsp;&nbsp;19.7462 &nbsp;    5.2521 &nbsp;  3.760&nbsp; 0.000765 <br>
+x5 &emsp;&emsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;     -5.0480 &nbsp;    0.4840 &nbsp;-10.430 &nbsp;2.52e-11 <br>
+x6 &emsp;&emsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;     0.9292  &nbsp;   0.2650 &nbsp;  3.506&nbsp; 0.001500 <br>
+Residual standard error: 2.596 on 29 degrees of freedom<br>
+Multiple R-squared:  0.8264,	Adjusted R-squared:  0.8144<br> 
+F-statistic: 69.03 on 2 and 29 DF,  p-value: 9.395e-12<br>
+</span></p>
+
+<i> Information about the model "ModelMin" with the minimum value of the adjusted C̄p characteristic can be obtained as follows:</i>
+<p><b><span style="color:red">
+MyResults&#36;model_min <br>
+summary(MyResults&#36;model_min_results)<br>
+</span></b></p>
+<i> This submodel can be identical to the final model and, in principle, to the full model.</i><br><br>
+<b>The next 9 illustrative tables may be obtained using the examples() function.</b><br>
+<p><b><span style="color:red">
+examples= examples()
+</span></b></p>
+<i> Subsequently, individual data are gradually evaluated in this illustrative manner (the outputs of the functions submodels(d) and final_model(d) can also be used in other ways).<br>
+
+Data <b>"Gilmour9p"</b> were taken from the original study by Gilmour.<br>
+It illustrates the entire method and is also of practical importance.<br>
+The data contains 9 predictors and 24 observations (House price data).<br>
+The outputs of the functions "submodels()" and "final_model()" are identical to the results in the original work.<br>
+</i> 
+<p><b><span style="color:red">
+d= examples&#36;Gilmour9p<br>
+MyResults=final_model(d) <br>
+</span></b></p>
+<p><span style="color:blue">?
+[1] "Number of regressors in model_min  2"<br>
+[1] "model_min:  y~x1+x2"<br>
+[1] "Cq+1: -0.248045011348888"<br>
+[1] "The starting value of q for the test of submodel is:   2"<br>
+[1] "For q = 2: Ho is rejected, new submodel goes to the next test."<br>
+[1] "For q = 1 : the end, Ho is not rejected and the resulting model is: y~x1+constant,<br>
+  F = 72.17679 Cq+1 = 0.89705"<br>
+[1] "Final value of q is :  1"<br>
+</span></p>
+<p><b><span style="color:red">
+yCp= as.numeric(MyResults&#36;submodels[,3]) ; xp= as.numeric(MyResults&#36;submodels[,2])<br>
+ymin= ifelse(min(yCp)<0, 1.1* min(yCp), 0.9* min(yCp))<br>
+YRange=c( ymin ,1.5*max(xp)) <br>
+plot(yCp ~ xp, xlab="Number of Parameters in Submodel",ylab="", ylim=YRange , col=ifelse( ( <br>lines(xp, xp, col="red")<br>
+mtext(bquote(paste( bar(C) , "p")), side=2, line=3, padj=1, cex=1.2)<br>
+mtext(bquote(paste("All Submodels: ",bar(C),"p ~ p")), side=3, line=3, padj=1, cex=1.2)<br>
+</span></b></p>
+<br>
+<img src="figures/Cp_Gilmour9p.png" alt="Trulli" style="width:80%" >
+<br><br>
+<i> The same commands as was used for data "Gilmour9p" and "mtcars" may be used for all other tables from the function <b>examples()</b>.</i>
+<br>
+For all examples see the help of the package.
+
