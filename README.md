@@ -1,12 +1,18 @@
-# gilmour
-<b> Contact information: josef.dolejs@uhk.cz    ;   djosef@post.cz  </b>
+<b><br>R Package "gilmour"<br></b>
 
-R package available: gilmour https://cran.r-project.org/web/packages/gilmour/index.html
+Contact information: josef.dolejs@uhk.cz    ;   djosef@post.cz  <br>
 
+R package available:<br>
+https://cran.r-project.org/web/packages/gilmour/index.html
+<br>
 
+GNU GENERAL PUBLIC LICENSE<br>
+Version 3, 29 June 2007<br>
+ Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/><br>
+ Everyone is permitted to copy and distribute verbatim copies<br>
+ of this license document, but changing it is not allowed.<br><br>
 
-
-<b>Motivation and significance </b>
+<b> Motivation and significance </b>
 
 Several methods may be found for selecting a subset of regressors from a set of k candidate variables in multiple linear regression. One possibility is to evaluate all possible regression models and comparing them using Mallows's Cp statistic (Cp). For a particular submodel with p parameters, the Cp statistic is defined as:
 
